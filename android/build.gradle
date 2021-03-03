@@ -1,0 +1,56 @@
+group 'com.pulin.aliyun_live'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven {
+            url 'https://maven.aliyun.com/repository/releases'
+        }
+        flatDir {
+            dirs 'libs'
+        }
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+
+    defaultConfig {
+        minSdkVersion 18
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+
+    dependencies {
+        // 添加对libs文件夹中aar文件的依赖
+        implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+        // 添加推流SDK的依赖
+        implementation 'com.alivc.live:AliLiveSdk:4.0.2'
+        // 添加播放器core的依赖
+        implementation 'com.aliyun.video.android:core:1.2.2'
+        // 添加播放器SDK的依赖
+        implementation 'com.aliyun.sdk.android:AliyunPlayer:5.2.3-full'
+        // 添加conan的依赖
+        implementation 'com.alivc.conan:AlivcConan:1.0.4'
+        // 添加artcdemuxer的依赖
+        implementation 'com.aliyun.sdk.android:AlivcArtc:5.2.3'
+        // 添加netsdk的依赖
+        implementation 'com.aliyun.rts.android:RtsSDK:1.5.0'
+    }
+}
