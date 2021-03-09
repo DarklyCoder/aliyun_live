@@ -5,7 +5,7 @@ import 'package:aliyun_live/contsants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// 控制器
+/// 播放控制器
 class PlayerViewController {
   MethodChannel _channel;
 
@@ -15,58 +15,52 @@ class PlayerViewController {
   }
 
   void startPlay(String url) async {
-    await _channel.invokeMethod('startPlay', url);
+    await _channel?.invokeMethod(Constants.CMD_START_PLAY, url);
   }
 
   void stopPlay() async {
-    await _channel.invokeMethod('stopPlay');
+    await _channel?.invokeMethod(Constants.CMD_STOP_PLAY);
   }
 
   void playAgain() async {
-    await _channel.invokeMethod('playAgain');
+    await _channel?.invokeMethod(Constants.CMD_PLAY_AGAIN);
   }
 
   void closePlay() async {
-    await _channel.invokeMethod('closePlay');
+    await _channel?.invokeMethod(Constants.CMD_CLOSE_PLAY);
   }
-
-  void release() async {}
 }
 
 /// 直播视频播放控件
-class PlayerView extends StatefulWidget {
+class PlayerView extends StatelessWidget {
   final PlayerViewController controller;
   final AliLiveConfig config;
 
   const PlayerView({Key key, this.controller, this.config}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return _PlayerViewState();
-  }
-}
-
-class _PlayerViewState extends State<PlayerView> {
-  @override
   Widget build(BuildContext context) {
-    var playerView = Platform.isAndroid
-        ? AndroidView(
-            viewType: Constants.PLAYER_VIEW_TYPE_ID,
-            creationParamsCodec: StandardMessageCodec(),
-            onPlatformViewCreated: widget.controller?.onViewCreate,
-            creationParams: widget.config,
-          )
-        : Platform.isIOS
-            ? UiKitView(
-                viewType: Constants.PLAYER_VIEW_TYPE_ID,
-                creationParamsCodec: StandardMessageCodec(),
-                onPlatformViewCreated: widget.controller?.onViewCreate,
-                creationParams: widget.config,
-              )
-            : Container(
-                color: Colors.white,
-              );
+    if (Platform.isAndroid) {
+      return AndroidView(
+        viewType: Constants.PLAYER_VIEW_TYPE_ID,
+        creationParamsCodec: StandardMessageCodec(),
+        onPlatformViewCreated: controller?.onViewCreate,
+        creationParams: config,
+      );
+    }
 
-    return playerView;
+    if (Platform.isIOS) {
+      return UiKitView(
+        viewType: Constants.PLAYER_VIEW_TYPE_ID,
+        creationParamsCodec: StandardMessageCodec(),
+        onPlatformViewCreated: controller?.onViewCreate,
+        creationParams: config,
+      );
+    }
+
+    return Container(
+      color: Colors.white,
+      child: Center(child: Text("该插件暂不支持此平台")),
+    );
   }
 }

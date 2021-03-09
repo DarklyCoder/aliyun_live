@@ -1,8 +1,6 @@
-package com.pulin.aliyun_live;
+package com.pulin.aliyun_live.view;
 
 import android.content.Context;
-
-import java.util.HashMap;
 
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.StandardMessageCodec;
@@ -13,13 +11,13 @@ public class LiveViewFactory extends PlatformViewFactory {
 
     private final BinaryMessenger messenger;
 
-    LiveViewFactory(BinaryMessenger messenger) {
+    public LiveViewFactory(BinaryMessenger messenger) {
         super(StandardMessageCodec.INSTANCE);
         this.messenger = messenger;
     }
 
     @Override
     public PlatformView create(Context context, int viewId, Object args) {
-        return new LiveView(messenger, context, viewId, (HashMap) args);
+        return new LiveView(messenger, context, viewId, args);
     }
 }

@@ -2,6 +2,9 @@ package com.pulin.aliyun_live;
 
 import androidx.annotation.NonNull;
 
+import com.pulin.aliyun_live.view.LiveViewFactory;
+import com.pulin.aliyun_live.view.PlayerViewFactory;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.platform.PlatformViewRegistry;
@@ -13,6 +16,7 @@ public class AliyunLivePlugin implements FlutterPlugin {
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        ALog.d("onAttachedToEngine");
         BinaryMessenger binaryMessenger = flutterPluginBinding.getBinaryMessenger();
 
         PlatformViewRegistry platformViewRegistry = flutterPluginBinding.getPlatformViewRegistry();
@@ -26,6 +30,7 @@ public class AliyunLivePlugin implements FlutterPlugin {
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        ALog.d("onDetachedFromEngine");
     }
 
 }

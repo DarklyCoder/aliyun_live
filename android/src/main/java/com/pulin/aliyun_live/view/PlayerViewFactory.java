@@ -1,8 +1,7 @@
-package com.pulin.aliyun_live;
+package com.pulin.aliyun_live.view;
 
 import android.content.Context;
 
-import io.flutter.Log;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.StandardMessageCodec;
 import io.flutter.plugin.platform.PlatformView;
@@ -12,7 +11,7 @@ public class PlayerViewFactory extends PlatformViewFactory {
 
     private final BinaryMessenger messenger;
 
-    PlayerViewFactory(BinaryMessenger messenger) {
+    public PlayerViewFactory(BinaryMessenger messenger) {
         super(StandardMessageCodec.INSTANCE);
         this.messenger = messenger;
     }

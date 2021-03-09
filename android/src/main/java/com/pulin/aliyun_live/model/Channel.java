@@ -1,4 +1,4 @@
-package com.pulin.aliyun_live;
+package com.pulin.aliyun_live.model;
 
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel;

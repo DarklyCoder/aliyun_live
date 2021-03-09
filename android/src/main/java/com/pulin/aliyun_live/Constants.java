@@ -7,6 +7,13 @@ public final class Constants {
     public static final String EVENT_CHANNEL_NAME = PREFIX_NAME + "ali_live_event_";
     public static final String LIVE_VIEW_TYPE_ID = PREFIX_NAME + "AliLiveView";
 
+    public static final String CMD_START_PREVIEW = "startPreview"; // 开始预览
+    public static final String CMD_SWITCH_CAMERA = "switchCamera"; // 切换相机
+    public static final String CMD_START_LIVE = "startLive"; // 开始推流
+    public static final String CMD_PAUSE_LIVE = "pauseLive"; // 暂停推流
+    public static final String CMD_RESUME_LIVE = "resumeLive"; // 恢复推流
+    public static final String CMD_CLOSE_LIVE = "closeLive"; // 结束推流
+
     public static final String PLAYER_METHOD_CHANNEL_NAME = PREFIX_NAME + "ali_player_";
     public static final String PLAYER_EVENT_CHANNEL_NAME = PREFIX_NAME + "ali_player_event_";
     public static final String PLAYER_VIEW_TYPE_ID = PREFIX_NAME + "AliPlayerView";

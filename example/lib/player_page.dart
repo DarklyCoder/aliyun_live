@@ -13,11 +13,19 @@ class _PlayerPageState extends State<PlayerPage> {
   PlayerViewController controller;
   String _url = "rtmp://58.200.131.2:1935/livetv/cctv1";
 
+  // String _url = "rtmp://192.168.3.198:1935/rtmplive/room";
+
   @override
   void initState() {
     super.initState();
 
     controller = PlayerViewController();
+  }
+
+  @override
+  void dispose() {
+    controller?.closePlay();
+    super.dispose();
   }
 
   @override

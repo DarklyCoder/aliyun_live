@@ -11,53 +11,64 @@ class LiveViewController {
 
   void onViewCreate(int viewId) {
     _channel = MethodChannel(Constants.METHOD_CHANNEL_NAME + viewId.toString());
+    startPreview();
   }
 
   void startPreview() async {
-    await _channel.invokeMethod('startPreview');
+    await _channel?.invokeMethod(Constants.CMD_START_PREVIEW);
+  }
+
+  void switchCamera() async {
+    await _channel?.invokeMethod(Constants.CMD_SWITCH_CAMERA);
   }
 
   void startLive(String url) async {
-    await _channel.invokeMethod('startLive', url);
+    await _channel?.invokeMethod(Constants.CMD_START_LIVE, url);
+  }
+
+  void pauseLive() async {
+    await _channel?.invokeMethod(Constants.CMD_PAUSE_LIVE);
+  }
+
+  void resumeLive() async {
+    await _channel?.invokeMethod(Constants.CMD_RESUME_LIVE);
   }
 
   void closeLive() async {
-    await _channel.invokeMethod('closeLive');
+    await _channel?.invokeMethod(Constants.CMD_CLOSE_LIVE);
   }
 }
 
 /// 直播控件
-class LiveView extends StatefulWidget {
+class LiveView extends StatelessWidget {
   final LiveViewController controller;
   final AliLiveConfig config;
 
   const LiveView({Key key, this.controller, this.config}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return _LiveViewState();
-  }
-}
-
-class _LiveViewState extends State<LiveView> {
-  @override
   Widget build(BuildContext context) {
-    var playerView = Platform.isAndroid
-        ? AndroidView(
-            viewType: Constants.LIVE_VIEW_TYPE_ID,
-            creationParamsCodec: StandardMessageCodec(),
-            onPlatformViewCreated: widget.controller?.onViewCreate,
-            creationParams: widget.config,
-          )
-        : Platform.isIOS
-            ? UiKitView(
-                viewType: Constants.LIVE_VIEW_TYPE_ID,
-                creationParamsCodec: StandardMessageCodec(),
-                onPlatformViewCreated: widget.controller?.onViewCreate,
-                creationParams: widget.config,
-              )
-            : Container();
+    if (Platform.isAndroid) {
+      return AndroidView(
+        viewType: Constants.LIVE_VIEW_TYPE_ID,
+        creationParamsCodec: StandardMessageCodec(),
+        onPlatformViewCreated: controller?.onViewCreate,
+        creationParams: config,
+      );
+    }
 
-    return playerView;
+    if (Platform.isIOS) {
+      return UiKitView(
+        viewType: Constants.LIVE_VIEW_TYPE_ID,
+        creationParamsCodec: StandardMessageCodec(),
+        onPlatformViewCreated: controller?.onViewCreate,
+        creationParams: config,
+      );
+    }
+
+    return Container(
+      color: Colors.white,
+      child: Center(child: Text("该插件暂不支持此平台")),
+    );
   }
 }
