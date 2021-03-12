@@ -181,39 +181,69 @@ public class LiveView extends BaseView {
 
         if (Constants.CMD_START_PREVIEW.equals(method)) {
             ALog.d("开启预览: " + call.arguments);
-            // 设置预览显示模式
-            mAliLiveEngine.setPreviewMode(AliLiveRenderModeAuto, AliLiveRenderMirrorModeOnlyFront);
-            // 开始预览
-            mAliLiveEngine.startPreview(mAliLiveRenderView);
+            try {
+                // 设置预览显示模式
+                mAliLiveEngine.setPreviewMode(AliLiveRenderModeAuto, AliLiveRenderMirrorModeOnlyFront);
+                // 开始预览
+                mAliLiveEngine.startPreview(mAliLiveRenderView);
+
+            } catch (Exception e) {
+                ALog.e(e);
+            }
+
             result.success("");
             return;
         }
 
         if (Constants.CMD_SWITCH_CAMERA.equals(method)) {
             ALog.d("切换相机: " + call.arguments);
-            mAliLiveEngine.switchCamera();
+            try {
+                mAliLiveEngine.switchCamera();
+
+            } catch (Exception e) {
+                ALog.e(e);
+            }
+
             result.success("");
             return;
         }
 
         if (Constants.CMD_START_LIVE.equals(method)) {
             ALog.d("开启直播: " + call.arguments);
-            String pushUrl = call.arguments.toString();
-            mAliLiveEngine.startPush(pushUrl);
+            try {
+                String pushUrl = call.arguments.toString();
+                mAliLiveEngine.startPush(pushUrl);
+
+            } catch (Exception e) {
+                ALog.e(e);
+            }
+
             result.success("");
             return;
         }
 
         if (Constants.CMD_PAUSE_LIVE.equals(method)) {
             ALog.d("暂停直播: " + call.arguments);
-            mAliLiveEngine.pausePush();
+            try {
+                mAliLiveEngine.pausePush();
+
+            } catch (Exception e) {
+                ALog.e(e);
+            }
+
             result.success("");
             return;
         }
 
         if (Constants.CMD_RESUME_LIVE.equals(method)) {
             ALog.d("恢复直播: " + call.arguments);
-            mAliLiveEngine.resumePush();
+            try {
+                mAliLiveEngine.resumePush();
+
+            } catch (Exception e) {
+                ALog.e(e);
+            }
+
             result.success("");
             return;
         }
@@ -237,12 +267,23 @@ public class LiveView extends BaseView {
     }
 
     private void closeLive() {
-        // 停止预览
-        mAliLiveEngine.stopPreview();
-        // 停止推流
-        mAliLiveEngine.stopPush();
-        // 销毁liveEngine
-        mAliLiveEngine.destroy();
-        mAliLiveEngine = null;
+        if (null == mAliLiveEngine) {
+            ALog.d("直播已关闭！");
+            return;
+        }
+
+        try {
+            // 停止预览
+            mAliLiveEngine.stopPreview();
+            // 停止推流
+            mAliLiveEngine.stopPush();
+            // 销毁liveEngine
+            mAliLiveEngine.destroy();
+            mAliLiveEngine = null;
+
+        } catch (Exception e) {
+            ALog.e("直播关闭异常！");
+            ALog.e(e);
+        }
     }
 }

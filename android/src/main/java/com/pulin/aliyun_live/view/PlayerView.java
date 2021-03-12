@@ -51,6 +51,8 @@ public class PlayerView extends BaseView {
         mAliPlayer = AliPlayerFactory.createAliPlayer(context);
         // 设置自动播放
         mAliPlayer.setAutoPlay(true);
+        mAliPlayer.setScaleMode(IPlayer.ScaleMode.SCALE_ASPECT_FILL);
+//        mAliPlayer.setMirrorMode();
         // 设置mMaxDelayTime，建议范围500~5000，值越小，直播时延越小，卡顿几率越大，根据需要自行决定
         PlayerConfig config = mAliPlayer.getConfig();
         config.mMaxDelayTime = 1000;
