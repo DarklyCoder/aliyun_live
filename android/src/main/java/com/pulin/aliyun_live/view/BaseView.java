@@ -50,7 +50,7 @@ public abstract class BaseView implements PlatformView, MethodChannel.MethodCall
     @Override
     public void dispose() {
         ALog.d(getClass().getSimpleName() + " dispose!");
-        channel.destroy();
+//        channel.destroy();
     }
 
     /**
