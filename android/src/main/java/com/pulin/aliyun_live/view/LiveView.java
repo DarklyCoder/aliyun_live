@@ -59,6 +59,8 @@ public class LiveView extends BaseView {
         rtmpConfig.videoMinBitrate = 600;
         // 创建直播推流配置
         AliLiveConfig mAliLiveConfig = new AliLiveConfig(rtmpConfig);
+//        mAliLiveConfig.videoRenderMode = AliLiveRenderModeAuto;
+        mAliLiveConfig.pushMirror = AliLiveConstants.AliLiveRenderMirrorMode.AliLiveRenderMirrorModeAllDisable;
         // 初始化分辨率、帧率、是否开启高清预览、暂停后默认显示图片
         mAliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_720P;
         mAliLiveConfig.videoFPS = 20;

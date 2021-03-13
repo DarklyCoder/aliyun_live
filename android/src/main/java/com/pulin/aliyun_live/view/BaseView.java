@@ -58,7 +58,13 @@ public abstract class BaseView implements PlatformView, MethodChannel.MethodCall
      */
     protected void callback(EventInfo info) {
         if (null != eventSink) {
-            eventSink.success(info.toString());
+            try {
+                eventSink.success(info.toString());
+
+            } catch (Exception e) {
+                ALog.d("消息回调异常");
+                ALog.e(e);
+            }
         }
     }
 }

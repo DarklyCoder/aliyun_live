@@ -51,11 +51,10 @@ public class PlayerView extends BaseView {
         mAliPlayer = AliPlayerFactory.createAliPlayer(context);
         // 设置自动播放
         mAliPlayer.setAutoPlay(true);
-        mAliPlayer.setScaleMode(IPlayer.ScaleMode.SCALE_ASPECT_FILL);
-//        mAliPlayer.setMirrorMode();
+        mAliPlayer.setScaleMode(IPlayer.ScaleMode.SCALE_ASPECT_FILL); // 缩放至全屏
         // 设置mMaxDelayTime，建议范围500~5000，值越小，直播时延越小，卡顿几率越大，根据需要自行决定
         PlayerConfig config = mAliPlayer.getConfig();
-        config.mMaxDelayTime = 1000;
+        config.mMaxDelayTime = 2000;
         // 设置网络超时时间，单位ms
         config.mNetworkTimeout = 5000;
         // 设置超时重试次数。每次重试间隔为networkTimeout。networkRetryCount=0则表示不重试，重试策略app决定，默认值为2
@@ -192,35 +191,61 @@ public class PlayerView extends BaseView {
      * 开始播放
      */
     private void startPlay(String url) {
-        // 给播放器设置拉流地址
-        UrlSource source = new UrlSource();
-        source.setUri(url);
-        mAliPlayer.setDataSource(source);
-        mAliPlayer.prepare();
+        try {
+            // 给播放器设置拉流地址
+            UrlSource source = new UrlSource();
+            source.setUri(url);
+            mAliPlayer.setDataSource(source);
+            mAliPlayer.prepare();
+            
+        } catch (Exception e) {
+            ALog.e(e);
+        }
     }
 
     /**
      * 暂停播放
      */
     private void pausePlay() {
-        mAliPlayer.pause();
+        try {
+            mAliPlayer.pause();
+
+        } catch (Exception e) {
+            ALog.e(e);
+        }
     }
 
     /**
      * 重新播放
      */
     private void playAgain() {
-        mAliPlayer.stop();
-        mAliPlayer.start();
+        try {
+            mAliPlayer.stop();
+            mAliPlayer.start();
+
+        } catch (Exception e) {
+            ALog.e(e);
+        }
     }
 
     /**
      * 关闭播放
      */
     private void closePlay() {
-        mAliPlayer.stop();
-        mAliPlayer.setSurface(null);
-        mAliPlayer.release();
-        mAliPlayer = null;
+        if (null == mAliPlayer) {
+            ALog.d("直播已关闭！");
+            return;
+        }
+
+        try {
+            mAliPlayer.stop();
+            mAliPlayer.setSurface(null);
+            mAliPlayer.release();
+            mAliPlayer = null;
+
+        } catch (Exception e) {
+            ALog.e("直播关闭异常！");
+            ALog.e(e);
+        }
     }
 }
