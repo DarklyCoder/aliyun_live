@@ -1,3 +1,7 @@
+## 0.0.2
+
+* 处理Android端关闭异常
+
 ## 0.0.1
 
-* TODO: Describe initial release.
+* 初始提交
