@@ -12,10 +12,12 @@ class LiveViewController {
   MethodChannel _channel;
   StreamSubscription<dynamic> _event;
   final LiveCallback onLiveCallback;
+  LiveCallback _callback;
 
   LiveViewController({this.onLiveCallback});
 
-  void onViewCreate(int viewId) {
+  void onViewCreate(int viewId, LiveCallback callback) {
+    _callback = callback;
     _channel = MethodChannel(Constants.METHOD_CHANNEL_NAME + viewId.toString());
 
     var eventName = Constants.EVENT_CHANNEL_NAME + viewId.toString();
@@ -38,6 +40,9 @@ class LiveViewController {
 
     if (null != onLiveCallback) {
       onLiveCallback(resp["type"], resp["info"]);
+    }
+    if (null != _callback) {
+      _callback(resp["type"], resp["info"]);
     }
   }
 
@@ -79,8 +84,13 @@ class LiveViewController {
 class LiveView extends StatelessWidget {
   final LiveViewController controller;
   final AliLiveConfig config;
+  final LiveCallback onLiveCallback;
 
-  const LiveView({Key key, this.controller, this.config}) : super(key: key);
+  const LiveView({Key key, this.controller, this.config, this.onLiveCallback}) : super(key: key);
+
+  void _onViewCreate(int viewId) {
+    controller?.onViewCreate(viewId, onLiveCallback);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +98,7 @@ class LiveView extends StatelessWidget {
       return AndroidView(
         viewType: Constants.LIVE_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
-        onPlatformViewCreated: controller?.onViewCreate,
+        onPlatformViewCreated: _onViewCreate,
         creationParams: config?.toJson(),
       );
     }
@@ -97,7 +107,7 @@ class LiveView extends StatelessWidget {
       return UiKitView(
         viewType: Constants.LIVE_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
-        onPlatformViewCreated: controller?.onViewCreate,
+        onPlatformViewCreated: _onViewCreate,
         creationParams: config?.toJson(),
       );
     }

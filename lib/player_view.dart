@@ -12,10 +12,12 @@ class PlayerViewController {
   MethodChannel _channel;
   StreamSubscription<dynamic> _event;
   final LiveCallback onLiveCallback;
+  LiveCallback _callback;
 
   PlayerViewController({this.onLiveCallback});
 
-  void onViewCreate(int viewId) {
+  void onViewCreate(int viewId, LiveCallback callback) {
+    _callback = callback;
     var name = Constants.PLAYER_METHOD_CHANNEL_NAME + viewId.toString();
     _channel = MethodChannel(name);
 
@@ -40,6 +42,9 @@ class PlayerViewController {
 
     if (null != onLiveCallback) {
       onLiveCallback(resp["type"], resp["info"]);
+    }
+    if (null != _callback) {
+      _callback(resp["type"], resp["info"]);
     }
   }
 
@@ -73,8 +78,13 @@ class PlayerViewController {
 class PlayerView extends StatelessWidget {
   final PlayerViewController controller;
   final AliLiveConfig config;
+  final LiveCallback onLiveCallback;
 
-  const PlayerView({Key key, this.controller, this.config}) : super(key: key);
+  const PlayerView({Key key, this.controller, this.config, this.onLiveCallback}) : super(key: key);
+
+  void _onViewCreate(int viewId) {
+    controller?.onViewCreate(viewId, onLiveCallback);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +92,7 @@ class PlayerView extends StatelessWidget {
       return AndroidView(
         viewType: Constants.PLAYER_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
-        onPlatformViewCreated: controller?.onViewCreate,
+        onPlatformViewCreated: _onViewCreate,
         creationParams: config?.toJson(),
       );
     }
@@ -91,7 +101,7 @@ class PlayerView extends StatelessWidget {
       return UiKitView(
         viewType: Constants.PLAYER_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
-        onPlatformViewCreated: controller?.onViewCreate,
+        onPlatformViewCreated: _onViewCreate,
         creationParams: config?.toJson(),
       );
     }
