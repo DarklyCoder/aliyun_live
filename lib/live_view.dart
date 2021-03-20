@@ -98,7 +98,7 @@ class LiveView extends StatelessWidget {
         viewType: Constants.LIVE_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
         onPlatformViewCreated: controller?.onViewCreate,
-        creationParams: config,
+        creationParams: config?.toJson(),
       );
     }
 

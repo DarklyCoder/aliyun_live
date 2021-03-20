@@ -1,6 +1,6 @@
 name: aliyun_live
 description: 轻度封装阿里云直播SDK.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/DarklyCoder/aliyun_live
 
 environment:

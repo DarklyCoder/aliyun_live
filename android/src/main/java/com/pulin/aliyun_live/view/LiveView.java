@@ -186,15 +186,15 @@ public class LiveView extends BaseView {
         // 初始化分辨率、帧率、是否开启高清预览、暂停后默认显示图片
         if (mLiveConfig.resolutionType == 1) {
             aliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_480P;
-
-        } else if (mLiveConfig.resolutionType == 2) {
-            aliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_720P;
-
         } else if (mLiveConfig.resolutionType == 3) {
             aliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_1080P;
+        } else {
+            aliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_720P;
+
         }
         aliLiveConfig.videoFPS = 25;
         aliLiveConfig.enableHighDefPreview = true;
+        aliLiveConfig.autoFocus = true;
 //        aliLiveConfig.pauseImage = bitmap;
 
         mAliLiveEngine = AliLiveEngine.create(context, aliLiveConfig);

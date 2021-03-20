@@ -44,7 +44,7 @@ class _LivePageState extends State<LivePage> {
         Positioned(
           left: 0,
           right: 0,
-          bottom: 0,
+          top: 0,
           child: _buildOptions(),
         ),
       ],
