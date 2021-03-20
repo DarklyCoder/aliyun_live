@@ -12,12 +12,17 @@ class PlayerPage extends StatefulWidget {
 class _PlayerPageState extends State<PlayerPage> {
   PlayerViewController controller;
   AliLiveConfig liveConfig;
+  String msg;
 
   @override
   void initState() {
     super.initState();
 
-    controller = PlayerViewController(onLiveCallback: (type, info) => {});
+    controller = PlayerViewController(onLiveCallback: (type, info) {
+      setState(() {
+        msg = type + " - " + info;
+      });
+    });
     liveConfig = AliLiveConfig();
     // liveConfig.playStreamUrl = "rtmp://192.168.3.198:1935/rtmplive/room";
     liveConfig.playStreamUrl = "rtmp://58.200.131.2:1935/livetv/cctv1";
@@ -47,6 +52,15 @@ class _PlayerPageState extends State<PlayerPage> {
           right: 0,
           top: 0,
           child: _buildOptions(),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 40,
+          child: Container(
+            color: Colors.white,
+            child: Text(msg ?? ""),
+          ),
         ),
       ],
     );

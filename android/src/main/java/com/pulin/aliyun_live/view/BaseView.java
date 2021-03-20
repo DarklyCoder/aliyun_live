@@ -1,6 +1,8 @@
 package com.pulin.aliyun_live.view;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.pulin.aliyun_live.ALog;
 import com.pulin.aliyun_live.model.Channel;
@@ -16,6 +18,7 @@ public abstract class BaseView implements PlatformView, MethodChannel.MethodCall
     protected final Context context;
 
     private EventChannel.EventSink eventSink;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     BaseView(BinaryMessenger messenger, Context context, int viewId, Object args) {
         this.context = context.getApplicationContext();
@@ -54,17 +57,21 @@ public abstract class BaseView implements PlatformView, MethodChannel.MethodCall
     }
 
     /**
-     * 回传到flutter
+     * 回传到flutter，需要在UI线程执行
      */
-    protected void callback(EventInfo info) {
-        if (null != eventSink) {
-            try {
-                eventSink.success(info.toString());
-
-            } catch (Exception e) {
-                ALog.d("消息回调异常");
-                ALog.e(e);
+    protected void callback(final EventInfo info) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (null != eventSink) {
+                        eventSink.success(info.toString());
+                    }
+                } catch (Exception e) {
+                    ALog.d("消息回调异常");
+                    ALog.e(e);
+                }
             }
-        }
+        });
     }
 }

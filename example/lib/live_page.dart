@@ -12,12 +12,17 @@ class LivePage extends StatefulWidget {
 class _LivePageState extends State<LivePage> {
   LiveViewController controller;
   AliLiveConfig liveConfig;
+  String msg;
 
   @override
   void initState() {
     super.initState();
 
-    controller = LiveViewController(onLiveCallback: (type, info) => {});
+    controller = LiveViewController(onLiveCallback: (type, info) {
+      setState(() {
+        msg = type + " - " + info;
+      });
+    });
     liveConfig = AliLiveConfig();
     liveConfig.pushStreamUrl = "rtmp://192.168.3.198:1935/rtmplive/room";
   }
@@ -46,6 +51,15 @@ class _LivePageState extends State<LivePage> {
           right: 0,
           top: 0,
           child: _buildOptions(),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 40,
+          child: Container(
+            color: Colors.white,
+            child: Text(msg ?? ""),
+          ),
         ),
       ],
     );
