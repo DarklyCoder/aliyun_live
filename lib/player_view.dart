@@ -1,33 +1,71 @@
+import 'dart:async';
+import 'dart:convert' as convert;
 import 'dart:io';
 
 import 'package:aliyun_live/ali_live_config.dart';
-import 'package:aliyun_live/contsants.dart';
+import 'package:aliyun_live/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// 播放控制器
 class PlayerViewController {
   MethodChannel _channel;
+  StreamSubscription<dynamic> _event;
+  final LiveCallback onLiveCallback;
+
+  PlayerViewController({this.onLiveCallback});
 
   void onViewCreate(int viewId) {
     var name = Constants.PLAYER_METHOD_CHANNEL_NAME + viewId.toString();
     _channel = MethodChannel(name);
+
+    var eventName = Constants.PLAYER_EVENT_CHANNEL_NAME + viewId.toString();
+    _event = EventChannel(eventName)
+        .receiveBroadcastStream()
+        .listen(_eventData, onError: _eventError, onDone: _eventDone);
   }
 
-  void startPlay(String url) async {
-    await _channel?.invokeMethod(Constants.CMD_START_PLAY, url);
+  /// 出错回调
+  void _eventError(error) {
+    print("@@@@@eventError:$error");
   }
 
-  void stopPlay() async {
-    await _channel?.invokeMethod(Constants.CMD_STOP_PLAY);
+  /// 接收数据回调
+  void _eventData(event) {
+    /// ERROR_GENERAL_EIO io中断
+    /// ERROR_UNKNOWN 没网
+
+    print("@@@@@eventData:$event");
+    var resp = convert.jsonDecode(event);
+
+    if (null != onLiveCallback) {
+      onLiveCallback(resp["type"], resp["info"]);
+    }
   }
 
-  void playAgain() async {
-    await _channel?.invokeMethod(Constants.CMD_PLAY_AGAIN);
+  /// 关闭并发送完成事件流，回调
+  void _eventDone() {
+    print("@@@@@eventDone");
   }
 
-  void closePlay() async {
-    await _channel?.invokeMethod(Constants.CMD_CLOSE_PLAY);
+  Future startPlay(AliLiveConfig config) async {
+    return _channel?.invokeMethod(Constants.CMD_START_PLAY, config.toJson());
+  }
+
+  Future pausePlay() async {
+    return _channel?.invokeMethod(Constants.CMD_PAUSE_PLAY);
+  }
+
+  Future resumePlay() async {
+    return _channel?.invokeMethod(Constants.CMD_RESUME_PLAY);
+  }
+
+  Future playAgain(AliLiveConfig config) async {
+    return _channel?.invokeMethod(Constants.CMD_PLAY_AGAIN, config.toJson());
+  }
+
+  Future closePlay() async {
+    return _channel?.invokeMethod(Constants.CMD_CLOSE_PLAY);
   }
 }
 
@@ -45,7 +83,7 @@ class PlayerView extends StatelessWidget {
         viewType: Constants.PLAYER_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
         onPlatformViewCreated: controller?.onViewCreate,
-        creationParams: config,
+        creationParams: config?.toJson(),
       );
     }
 
@@ -54,7 +92,7 @@ class PlayerView extends StatelessWidget {
         viewType: Constants.PLAYER_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
         onPlatformViewCreated: controller?.onViewCreate,
-        creationParams: config,
+        creationParams: config?.toJson(),
       );
     }
 

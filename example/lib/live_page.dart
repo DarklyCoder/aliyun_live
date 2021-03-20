@@ -11,15 +11,15 @@ class LivePage extends StatefulWidget {
 
 class _LivePageState extends State<LivePage> {
   LiveViewController controller;
-
-  /// 推流地址
-  String pushUrl = "rtmp://192.168.3.198:1935/rtmplive/room";
+  AliLiveConfig liveConfig;
 
   @override
   void initState() {
     super.initState();
 
-    controller = LiveViewController();
+    controller = LiveViewController(onLiveCallback: (type, info) => {});
+    liveConfig = AliLiveConfig();
+    liveConfig.pushStreamUrl = "rtmp://192.168.3.198:1935/rtmplive/room";
   }
 
   @override
@@ -40,7 +40,7 @@ class _LivePageState extends State<LivePage> {
   Widget _buildContent() {
     return Stack(
       children: [
-        LiveView(controller: controller),
+        LiveView(controller: controller, config: liveConfig),
         Positioned(
           left: 0,
           right: 0,
@@ -67,7 +67,7 @@ class _LivePageState extends State<LivePage> {
               child: Text("切换相机"),
             ),
             MaterialButton(
-              onPressed: () => controller.startLive(pushUrl),
+              onPressed: () => controller.startLive(liveConfig),
               child: Text("开始直播"),
             ),
             MaterialButton(
@@ -81,6 +81,10 @@ class _LivePageState extends State<LivePage> {
             MaterialButton(
               onPressed: () => controller.closeLive(),
               child: Text("结束直播"),
+            ),
+            MaterialButton(
+              onPressed: () => controller.againLive(liveConfig),
+              child: Text("重新推流"),
             ),
           ],
         ),

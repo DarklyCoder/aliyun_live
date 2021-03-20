@@ -11,15 +11,16 @@ class PlayerPage extends StatefulWidget {
 
 class _PlayerPageState extends State<PlayerPage> {
   PlayerViewController controller;
-  String _url = "rtmp://58.200.131.2:1935/livetv/cctv1";
-
-  // String _url = "rtmp://192.168.3.198:1935/rtmplive/room";
+  AliLiveConfig liveConfig;
 
   @override
   void initState() {
     super.initState();
 
-    controller = PlayerViewController();
+    controller = PlayerViewController(onLiveCallback: (type, info) => {});
+    liveConfig = AliLiveConfig();
+    // liveConfig.playStreamUrl = "rtmp://192.168.3.198:1935/rtmplive/room";
+    liveConfig.playStreamUrl = "rtmp://58.200.131.2:1935/livetv/cctv1";
   }
 
   @override
@@ -40,7 +41,7 @@ class _PlayerPageState extends State<PlayerPage> {
   Widget _buildContent() {
     return Stack(
       children: [
-        PlayerView(controller: controller),
+        PlayerView(controller: controller, config: liveConfig),
         Positioned(
           left: 0,
           right: 0,
@@ -54,25 +55,32 @@ class _PlayerPageState extends State<PlayerPage> {
   Widget _buildOptions() {
     return Container(
       color: Color(0xFFFFFFFF),
-      child: Row(
-        children: [
-          MaterialButton(
-            onPressed: () => controller.startPlay(_url),
-            child: Text("开始拉流"),
-          ),
-          MaterialButton(
-            onPressed: () => controller.stopPlay(),
-            child: Text("暂停拉流"),
-          ),
-          MaterialButton(
-            onPressed: () => controller.playAgain(),
-            child: Text("重新拉流"),
-          ),
-          MaterialButton(
-            onPressed: () => controller.closePlay(),
-            child: Text("停止拉流"),
-          ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            MaterialButton(
+              onPressed: () => controller.startPlay(liveConfig),
+              child: Text("开始拉流"),
+            ),
+            MaterialButton(
+              onPressed: () => controller.pausePlay(),
+              child: Text("暂停拉流"),
+            ),
+            MaterialButton(
+              onPressed: () => controller.resumePlay(),
+              child: Text("恢复拉流"),
+            ),
+            MaterialButton(
+              onPressed: () => controller.playAgain(liveConfig),
+              child: Text("重新拉流"),
+            ),
+            MaterialButton(
+              onPressed: () => controller.closePlay(),
+              child: Text("停止拉流"),
+            ),
+          ],
+        ),
       ),
     );
   }

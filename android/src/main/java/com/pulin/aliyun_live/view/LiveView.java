@@ -13,12 +13,10 @@ import com.alivc.live.AliLiveEngine;
 import com.alivc.live.AliLiveError;
 import com.alivc.live.AliLiveRTMPConfig;
 import com.alivc.live.AliLiveRenderView;
-import com.alivc.live.bean.AliLiveLocalVideoStats;
-import com.alivc.live.bean.AliLiveRemoteAudioStats;
-import com.alivc.live.bean.AliLiveRemoteVideoStats;
-import com.alivc.live.bean.AliLiveStats;
 import com.pulin.aliyun_live.ALog;
 import com.pulin.aliyun_live.Constants;
+import com.pulin.aliyun_live.model.EventInfo;
+import com.pulin.aliyun_live.model.LiveConfig;
 
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
@@ -34,6 +32,7 @@ public class LiveView extends BaseView {
 
     private AliLiveEngine mAliLiveEngine;
     private AliLiveRenderView mAliLiveRenderView;
+    private LiveConfig mLiveConfig; // 直播配置
 
     LiveView(BinaryMessenger messenger, Context context, int viewId, Object args) {
         super(messenger, context, viewId, args);
@@ -51,6 +50,129 @@ public class LiveView extends BaseView {
 
     @Override
     protected void createView(Object args) {
+        mLiveConfig = LiveConfig.parseArguments(args);
+        initAliLiveConfig();
+        initCallBack(false);
+        ALog.d("LiveView Create Complete!");
+    }
+
+    @Override
+    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+        String method = call.method;
+        if (TextUtils.isEmpty(method)) {
+            result.notImplemented();
+            return;
+        }
+
+        if (Constants.CMD_START_PREVIEW.equals(method)) {
+            ALog.d("开启预览");
+            try {
+                // 设置预览显示模式
+                mAliLiveEngine.setPreviewMode(AliLiveRenderModeAuto, AliLiveRenderMirrorModeOnlyFront);
+                // 开始预览
+                mAliLiveEngine.startPreview(mAliLiveRenderView);
+                result.success("");
+            } catch (Exception e) {
+                ALog.e(e);
+                result.error("-1", "开启预览失败", e);
+            }
+            return;
+        }
+
+        if (Constants.CMD_SWITCH_CAMERA.equals(method)) {
+            ALog.d("切换相机");
+            try {
+                mAliLiveEngine.switchCamera();
+                result.success("");
+
+            } catch (Exception e) {
+                ALog.e(e);
+                result.error("-1", "切换相机失败", e);
+            }
+            return;
+        }
+
+        if (Constants.CMD_START_LIVE.equals(method)) {
+            ALog.d("开启直播: " + call.arguments);
+            try {
+                mLiveConfig = LiveConfig.parseArguments(call.arguments);
+                mAliLiveEngine.startPush(mLiveConfig.pushStreamUrl);
+                result.success("");
+
+            } catch (Exception e) {
+                ALog.e(e);
+                result.error("-1", "推流失败", e);
+            }
+            return;
+        }
+
+        if (Constants.CMD_PAUSE_LIVE.equals(method)) {
+            ALog.d("暂停直播");
+            try {
+                mAliLiveEngine.pausePush();
+                result.success("");
+
+            } catch (Exception e) {
+                ALog.e(e);
+                result.error("-1", "暂停直播失败", e);
+            }
+            return;
+        }
+
+        if (Constants.CMD_RESUME_LIVE.equals(method)) {
+            ALog.d("恢复直播");
+            try {
+                mAliLiveEngine.resumePush();
+                result.success("");
+
+            } catch (Exception e) {
+                ALog.e(e);
+                result.error("-1", "恢复直播失败", e);
+            }
+            return;
+        }
+
+        if (Constants.CMD_CLOSE_LIVE.equals(method)) {
+            ALog.d("关闭直播");
+            closeLive();
+            result.success("");
+            return;
+        }
+
+        if (Constants.CMD_AGAIN_LIVE.equals(method)) {
+            ALog.d("重新直播: " + call.arguments);
+            mLiveConfig = LiveConfig.parseArguments(call.arguments);
+//            initCallBack(true);
+//            initAliLiveConfig();
+//            initCallBack(false);
+
+            try {
+                mAliLiveEngine.stopPush();
+                mAliLiveEngine.startPush(mLiveConfig.pushStreamUrl);
+                result.success("");
+
+            } catch (Exception e) {
+                ALog.e(e);
+                result.error("-1", "重新直播失败", e);
+            }
+        }
+    }
+
+    @Override
+    public View getView() {
+        return mAliLiveRenderView;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        closeLive();
+    }
+
+    /**
+     * 初始化配置，推流之前需要配置
+     */
+    private void initAliLiveConfig() {
         // 创建RTMP相关配置对象
         AliLiveRTMPConfig rtmpConfig = new AliLiveRTMPConfig();
         // 初始化码率配置
@@ -58,16 +180,33 @@ public class LiveView extends BaseView {
         rtmpConfig.videoTargetBitrate = 1500;
         rtmpConfig.videoMinBitrate = 600;
         // 创建直播推流配置
-        AliLiveConfig mAliLiveConfig = new AliLiveConfig(rtmpConfig);
+        AliLiveConfig aliLiveConfig = new AliLiveConfig(rtmpConfig);
 //        mAliLiveConfig.videoRenderMode = AliLiveRenderModeAuto;
-        mAliLiveConfig.pushMirror = AliLiveConstants.AliLiveRenderMirrorMode.AliLiveRenderMirrorModeAllDisable;
+        aliLiveConfig.pushMirror = AliLiveConstants.AliLiveRenderMirrorMode.AliLiveRenderMirrorModeOnlyFront;
         // 初始化分辨率、帧率、是否开启高清预览、暂停后默认显示图片
-        mAliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_720P;
-        mAliLiveConfig.videoFPS = 20;
-        mAliLiveConfig.enableHighDefPreview = true;
-//        mAliLiveConfig.pauseImage = bitmap;
-        mAliLiveEngine = AliLiveEngine.create(context, mAliLiveConfig);
+        if (mLiveConfig.resolutionType == 1) {
+            aliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_480P;
+
+        } else if (mLiveConfig.resolutionType == 2) {
+            aliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_720P;
+
+        } else if (mLiveConfig.resolutionType == 3) {
+            aliLiveConfig.videoPushProfile = AliLiveConstants.AliLiveVideoPushProfile.AliLiveVideoProfile_1080P;
+        }
+        aliLiveConfig.videoFPS = 25;
+        aliLiveConfig.enableHighDefPreview = true;
+//        aliLiveConfig.pauseImage = bitmap;
+
+        mAliLiveEngine = AliLiveEngine.create(context, aliLiveConfig);
         mAliLiveRenderView = mAliLiveEngine.createRenderView(false);
+    }
+
+    private void initCallBack(boolean clear) {
+        if (clear) {
+            mAliLiveEngine.setNetworkCallback(null);
+            mAliLiveEngine.setStatusCallback(null);
+            return;
+        }
 
         // 设置推流网络状态相关回调
         mAliLiveEngine.setNetworkCallback(new AliLiveCallback.NetworkCallback() {
@@ -101,33 +240,16 @@ public class LiveView extends BaseView {
 
             }
         });
-        // 设置推流数据回调。
-        mAliLiveEngine.setStatsCallback(new AliLiveCallback.StatsCallback() {
-            @Override
-            public void onLiveTotalStats(AliLiveStats aliLiveStats) {
-
-            }
-
-            @Override
-            public void onLiveLocalVideoStats(AliLiveLocalVideoStats aliLiveLocalVideoStats) {
-
-            }
-
-            @Override
-            public void onLiveRemoteVideoStats(AliLiveRemoteVideoStats aliLiveRemoteVideoStats) {
-
-            }
-
-            @Override
-            public void onLiveRemoteAudioStats(AliLiveRemoteAudioStats aliLiveRemoteAudioStats) {
-
-            }
-        });
         // 设置推流状态相关回调
         mAliLiveEngine.setStatusCallback(new AliLiveCallback.StatusCallback() {
             @Override
             public void onLiveSdkError(AliLiveEngine aliLiveEngine, AliLiveError aliLiveError) {
+                ALog.e("code: " + aliLiveError.errorCode + ", msg: " + aliLiveError.errorDescription);
+                EventInfo info = new EventInfo();
+                info.type = "error";
+                info.info = "" + aliLiveError.errorCode;
 
+                callback(info);
             }
 
             @Override
@@ -170,102 +292,6 @@ public class LiveView extends BaseView {
 
             }
         });
-        ALog.d("LiveView Create Complete!");
-    }
-
-    @Override
-    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
-        String method = call.method;
-        if (TextUtils.isEmpty(method)) {
-            result.notImplemented();
-            return;
-        }
-
-        if (Constants.CMD_START_PREVIEW.equals(method)) {
-            ALog.d("开启预览: " + call.arguments);
-            try {
-                // 设置预览显示模式
-                mAliLiveEngine.setPreviewMode(AliLiveRenderModeAuto, AliLiveRenderMirrorModeOnlyFront);
-                // 开始预览
-                mAliLiveEngine.startPreview(mAliLiveRenderView);
-
-            } catch (Exception e) {
-                ALog.e(e);
-            }
-
-            result.success("");
-            return;
-        }
-
-        if (Constants.CMD_SWITCH_CAMERA.equals(method)) {
-            ALog.d("切换相机: " + call.arguments);
-            try {
-                mAliLiveEngine.switchCamera();
-
-            } catch (Exception e) {
-                ALog.e(e);
-            }
-
-            result.success("");
-            return;
-        }
-
-        if (Constants.CMD_START_LIVE.equals(method)) {
-            ALog.d("开启直播: " + call.arguments);
-            try {
-                String pushUrl = call.arguments.toString();
-                mAliLiveEngine.startPush(pushUrl);
-
-            } catch (Exception e) {
-                ALog.e(e);
-            }
-
-            result.success("");
-            return;
-        }
-
-        if (Constants.CMD_PAUSE_LIVE.equals(method)) {
-            ALog.d("暂停直播: " + call.arguments);
-            try {
-                mAliLiveEngine.pausePush();
-
-            } catch (Exception e) {
-                ALog.e(e);
-            }
-
-            result.success("");
-            return;
-        }
-
-        if (Constants.CMD_RESUME_LIVE.equals(method)) {
-            ALog.d("恢复直播: " + call.arguments);
-            try {
-                mAliLiveEngine.resumePush();
-
-            } catch (Exception e) {
-                ALog.e(e);
-            }
-
-            result.success("");
-            return;
-        }
-
-        if (Constants.CMD_CLOSE_LIVE.equals(method)) {
-            ALog.d("关闭直播: " + call.arguments);
-            closeLive();
-            result.success("");
-        }
-    }
-
-    @Override
-    public View getView() {
-        return mAliLiveRenderView;
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        closeLive();
     }
 
     private void closeLive() {
@@ -282,10 +308,12 @@ public class LiveView extends BaseView {
             // 销毁liveEngine
             mAliLiveEngine.destroy();
             mAliLiveEngine = null;
+            mAliLiveRenderView = null;
 
         } catch (Exception e) {
             ALog.e("直播关闭异常！");
             ALog.e(e);
         }
     }
+
 }

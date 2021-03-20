@@ -18,6 +18,7 @@ import com.aliyun.player.source.UrlSource;
 import com.pulin.aliyun_live.ALog;
 import com.pulin.aliyun_live.Constants;
 import com.pulin.aliyun_live.model.EventInfo;
+import com.pulin.aliyun_live.model.LiveConfig;
 
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
@@ -30,6 +31,7 @@ public class PlayerView extends BaseView {
 
     private AliPlayer mAliPlayer;
     private SurfaceView mSurfaceView;
+    private LiveConfig mLiveConfig; // 直播配置
 
     PlayerView(BinaryMessenger messenger, Context context, int viewId, Object args) {
         super(messenger, context, viewId, args);
@@ -47,6 +49,7 @@ public class PlayerView extends BaseView {
 
     @Override
     protected void createView(Object args) {
+        mLiveConfig = LiveConfig.parseArguments(args);
         // 创建播放器
         mAliPlayer = AliPlayerFactory.createAliPlayer(context);
         // 设置自动播放
@@ -60,13 +63,14 @@ public class PlayerView extends BaseView {
         // 设置超时重试次数。每次重试间隔为networkTimeout。networkRetryCount=0则表示不重试，重试策略app决定，默认值为2
         config.mNetworkRetryCount = 3;
         mAliPlayer.setConfig(config);
+
         mAliPlayer.setOnErrorListener(new IPlayer.OnErrorListener() {
             @Override
             public void onError(ErrorInfo errorInfo) {
                 ALog.e("code: " + errorInfo.getCode() + ", msg: " + errorInfo.getMsg() + ", extra: " + errorInfo.getExtra());
                 EventInfo info = new EventInfo();
                 info.type = "error";
-                info.info = "";
+                info.info = errorInfo.getCode().name();
 
                 callback(info);
             }
@@ -74,12 +78,12 @@ public class PlayerView extends BaseView {
         mAliPlayer.setOnInfoListener(new IPlayer.OnInfoListener() {
             @Override
             public void onInfo(InfoBean info) {
-                ALog.d("code: " + info.getCode() + ", value: " + info.getExtraValue() + ", extra: " + info.getExtraMsg());
-                EventInfo eventInfo = new EventInfo();
-                eventInfo.type = "error";
-                eventInfo.info = "";
-
-                callback(eventInfo);
+//                ALog.d("code: " + info.getCode() + ", value: " + info.getExtraValue() + ", extra: " + info.getExtraMsg());
+//                EventInfo eventInfo = new EventInfo();
+//                eventInfo.type = "error";
+//                eventInfo.info = "";
+//
+//                callback(eventInfo);
             }
         });
         mAliPlayer.setOnLoadingStatusListener(new IPlayer.OnLoadingStatusListener() {
@@ -106,7 +110,7 @@ public class PlayerView extends BaseView {
             public void onLoadingEnd() {
                 ALog.d("onLoadingEnd");
                 EventInfo info = new EventInfo();
-                info.type = "loadingEnd";
+                info.type = "loading";
                 info.info = "end";
                 callback(info);
             }
@@ -149,14 +153,21 @@ public class PlayerView extends BaseView {
 
         if (Constants.CMD_START_PLAY.equals(method)) {
             ALog.d("开始拉流: " + call.arguments);
-            String url = call.arguments.toString();
-            startPlay(url);
+            mLiveConfig = LiveConfig.parseArguments(call.arguments);
+            startPlay(mLiveConfig.playStreamUrl);
             result.success("");
             return;
         }
 
-        if (Constants.CMD_STOP_PLAY.equals(method)) {
-            ALog.d("停止拉流");
+        if (Constants.CMD_PAUSE_PLAY.equals(method)) {
+            ALog.d("暂停拉流");
+            pausePlay();
+            result.success("");
+            return;
+        }
+
+        if (Constants.CMD_RESUME_PLAY.equals(method)) {
+            ALog.d("恢复拉流");
             pausePlay();
             result.success("");
             return;
@@ -164,7 +175,14 @@ public class PlayerView extends BaseView {
 
         if (Constants.CMD_PLAY_AGAIN.equals(method)) {
             ALog.d("重新拉流");
-            playAgain();
+            mLiveConfig = LiveConfig.parseArguments(call.arguments);
+            try {
+                mAliPlayer.stop();
+            } catch (Exception e) {
+                ALog.e(e);
+            }
+            startPlay(mLiveConfig.playStreamUrl);
+            
             result.success("");
             return;
         }
@@ -197,7 +215,7 @@ public class PlayerView extends BaseView {
             source.setUri(url);
             mAliPlayer.setDataSource(source);
             mAliPlayer.prepare();
-            
+
         } catch (Exception e) {
             ALog.e(e);
         }
@@ -209,19 +227,6 @@ public class PlayerView extends BaseView {
     private void pausePlay() {
         try {
             mAliPlayer.pause();
-
-        } catch (Exception e) {
-            ALog.e(e);
-        }
-    }
-
-    /**
-     * 重新播放
-     */
-    private void playAgain() {
-        try {
-            mAliPlayer.stop();
-            mAliPlayer.start();
 
         } catch (Exception e) {
             ALog.e(e);

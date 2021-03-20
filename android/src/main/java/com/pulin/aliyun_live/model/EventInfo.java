@@ -10,8 +10,8 @@ public class EventInfo {
     @Override
     public String toString() {
         return "{" +
-                "type:'" + type + '\'' +
-                ", info:'" + info + '\'' +
+                "\"type\":\"" + type + "\"" +
+                ", \"info\":\"" + info + "\"" +
                 '}';
     }
 }

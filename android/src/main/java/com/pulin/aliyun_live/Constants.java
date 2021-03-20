@@ -13,13 +13,15 @@ public final class Constants {
     public static final String CMD_PAUSE_LIVE = "pauseLive"; // 暂停推流
     public static final String CMD_RESUME_LIVE = "resumeLive"; // 恢复推流
     public static final String CMD_CLOSE_LIVE = "closeLive"; // 结束推流
+    public static final String CMD_AGAIN_LIVE = "againLive"; // 重新推流
 
     public static final String PLAYER_METHOD_CHANNEL_NAME = PREFIX_NAME + "ali_player_";
     public static final String PLAYER_EVENT_CHANNEL_NAME = PREFIX_NAME + "ali_player_event_";
     public static final String PLAYER_VIEW_TYPE_ID = PREFIX_NAME + "AliPlayerView";
 
     public static final String CMD_START_PLAY = "startPlay"; // 开始拉流
-    public static final String CMD_STOP_PLAY = "stopPlay"; // 暂停拉流
+    public static final String CMD_PAUSE_PLAY = "pausePlay"; // 暂停拉流
+    public static final String CMD_RESUME_PLAY = "resumePlay"; // 恢复拉流
     public static final String CMD_PLAY_AGAIN = "playAgain"; // 重新拉流
     public static final String CMD_CLOSE_PLAY = "closePlay"; // 结束拉流
 }

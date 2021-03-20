@@ -1,41 +1,77 @@
+import 'dart:async';
+import 'dart:convert' as convert;
 import 'dart:io';
 
 import 'package:aliyun_live/ali_live_config.dart';
-import 'package:aliyun_live/contsants.dart';
+import 'package:aliyun_live/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// 控制器
 class LiveViewController {
   MethodChannel _channel;
+  StreamSubscription<dynamic> _event;
+  final LiveCallback onLiveCallback;
+
+  LiveViewController({this.onLiveCallback});
 
   void onViewCreate(int viewId) {
     _channel = MethodChannel(Constants.METHOD_CHANNEL_NAME + viewId.toString());
+
+    var eventName = Constants.EVENT_CHANNEL_NAME + viewId.toString();
+    _event = EventChannel(eventName)
+        .receiveBroadcastStream()
+        .listen(_eventData, onError: _eventError, onDone: _eventDone);
+
     startPreview();
   }
 
-  void startPreview() async {
-    await _channel?.invokeMethod(Constants.CMD_START_PREVIEW);
+  /// 出错回调
+  void _eventError(error) {
+    print("@@@@@eventError:$error");
   }
 
-  void switchCamera() async {
-    await _channel?.invokeMethod(Constants.CMD_SWITCH_CAMERA);
+  /// 接收数据回调
+  void _eventData(event) {
+    print("@@@@@eventData:$event");
+    var resp = convert.jsonDecode(event);
+
+    if (null != onLiveCallback) {
+      onLiveCallback(resp["type"], resp["info"]);
+    }
   }
 
-  void startLive(String url) async {
-    await _channel?.invokeMethod(Constants.CMD_START_LIVE, url);
+  /// 关闭并发送完成事件流，回调
+  void _eventDone() {
+    print("@@@@@eventDone");
   }
 
-  void pauseLive() async {
-    await _channel?.invokeMethod(Constants.CMD_PAUSE_LIVE);
+  Future startPreview() async {
+    return _channel?.invokeMethod(Constants.CMD_START_PREVIEW);
   }
 
-  void resumeLive() async {
-    await _channel?.invokeMethod(Constants.CMD_RESUME_LIVE);
+  Future switchCamera() async {
+    return _channel?.invokeMethod(Constants.CMD_SWITCH_CAMERA);
   }
 
-  void closeLive() async {
-    await _channel?.invokeMethod(Constants.CMD_CLOSE_LIVE);
+  Future startLive(AliLiveConfig config) async {
+    return _channel?.invokeMethod(Constants.CMD_START_LIVE, config.toJson());
+  }
+
+  Future pauseLive() async {
+    return _channel?.invokeMethod(Constants.CMD_PAUSE_LIVE);
+  }
+
+  Future resumeLive() async {
+    return _channel?.invokeMethod(Constants.CMD_RESUME_LIVE);
+  }
+
+  Future closeLive() async {
+    return _channel?.invokeMethod(Constants.CMD_CLOSE_LIVE);
+  }
+
+  Future againLive(AliLiveConfig config) async {
+    return _channel?.invokeMethod(Constants.CMD_AGAIN_LIVE, config.toJson());
   }
 }
 
@@ -53,7 +89,7 @@ class LiveView extends StatelessWidget {
         viewType: Constants.LIVE_VIEW_TYPE_ID,
         creationParamsCodec: StandardMessageCodec(),
         onPlatformViewCreated: controller?.onViewCreate,
-        creationParams: config,
+        creationParams: config?.toJson(),
       );
     }
 
