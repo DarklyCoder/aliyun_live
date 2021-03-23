@@ -28,9 +28,9 @@ class _LivePageState extends State<LivePage> {
   }
 
   @override
-  void dispose() {
-    controller?.closeLive();
+  void dispose() async {
     super.dispose();
+    await controller?.closeLive();
   }
 
   @override
@@ -73,31 +73,31 @@ class _LivePageState extends State<LivePage> {
         child: Row(
           children: [
             MaterialButton(
-              onPressed: () => controller.startPreview(),
+              onPressed: () async => await controller.startPreview(),
               child: Text("开始预览"),
             ),
             MaterialButton(
-              onPressed: () => controller.switchCamera(),
+              onPressed: () async => await controller.switchCamera(),
               child: Text("切换相机"),
             ),
             MaterialButton(
-              onPressed: () => controller.startLive(liveConfig),
+              onPressed: () async => await controller.startLive(liveConfig),
               child: Text("开始直播"),
             ),
             MaterialButton(
-              onPressed: () => controller.pauseLive(),
+              onPressed: () async => await controller.pauseLive(),
               child: Text("暂停推流"),
             ),
             MaterialButton(
-              onPressed: () => controller.resumeLive(),
+              onPressed: () async => await controller.resumeLive(),
               child: Text("恢复推流"),
             ),
             MaterialButton(
-              onPressed: () => controller.closeLive(),
+              onPressed: () async => await controller.closeLive(),
               child: Text("结束直播"),
             ),
             MaterialButton(
-              onPressed: () => controller.againLive(liveConfig),
+              onPressed: () async => await controller.againLive(liveConfig),
               child: Text("重新推流"),
             ),
           ],

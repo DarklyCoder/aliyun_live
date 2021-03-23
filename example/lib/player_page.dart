@@ -29,9 +29,9 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   @override
-  void dispose() {
-    controller?.closePlay();
+  void dispose() async {
     super.dispose();
+    await controller?.closePlay();
   }
 
   @override
@@ -74,23 +74,23 @@ class _PlayerPageState extends State<PlayerPage> {
         child: Row(
           children: [
             MaterialButton(
-              onPressed: () => controller.startPlay(liveConfig),
+              onPressed: () async => await controller.startPlay(liveConfig),
               child: Text("开始拉流"),
             ),
             MaterialButton(
-              onPressed: () => controller.pausePlay(),
+              onPressed: () async => await controller.pausePlay(),
               child: Text("暂停拉流"),
             ),
             MaterialButton(
-              onPressed: () => controller.resumePlay(),
+              onPressed: () async => await controller.resumePlay(),
               child: Text("恢复拉流"),
             ),
             MaterialButton(
-              onPressed: () => controller.playAgain(liveConfig),
+              onPressed: () async => await controller.playAgain(liveConfig),
               child: Text("重新拉流"),
             ),
             MaterialButton(
-              onPressed: () => controller.closePlay(),
+              onPressed: () async => await controller.closePlay(),
               child: Text("停止拉流"),
             ),
           ],

@@ -308,7 +308,6 @@ public class LiveView extends BaseView {
             // 销毁liveEngine
             mAliLiveEngine.destroy();
             mAliLiveEngine = null;
-            mAliLiveRenderView = null;
 
         } catch (Exception e) {
             ALog.e("直播关闭异常！");
